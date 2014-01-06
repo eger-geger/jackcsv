@@ -1,10 +1,9 @@
 package com.jackcsv.table
 
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatest.{Matchers, FunSuite}
 
-class SCellSeqTests extends FunSuite with ShouldMatchers with TableDrivenPropertyChecks  {
+class SCellSeqTests extends FunSuite with Matchers with TableDrivenPropertyChecks {
 
   val rowsToAdd = Table[SCellSeq, SCellSeq, SCellSeq](
     ("---row 1---",       "---row 2---",  "---row 3---"),
