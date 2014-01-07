@@ -2,7 +2,7 @@ package com.jackcsv.table
 
 class SCell protected (private var _value: Any) {
 
-  def +(other: SCell): SCell = new SCell(value) { this += other }
+  def +(other: SCell): SCell = { val c = SCell(value); c += other; c }
 
   def +=(other: SCell): Unit = {
     _value = (value, other.value) match {
@@ -27,22 +27,22 @@ class SCell protected (private var _value: Any) {
 
 object SCell {
 
-  implicit def anyToSCell(any:Any):SCell = SCell(any)
-
-  def apply(value: Any): SCell = {
+  implicit def apply(value: Any): SCell = {
     value match {
       case cell: SCell => cell
-      case null => NullSCell
+      case null => EmptyCell
       case o: Option[Any] => SCell(o.getOrElse(null))
       case v => new SCell(v)
     }
   }
 }
 
-object NullSCell extends SCell(null) {
-  override def toString = "undefined"
+object EmptyCell extends SCell(null) {
+
+  override def toString = "\u2205"
 
   override def +=(other: SCell) {}
 
   override def +(other: SCell): SCell = other
+
 }

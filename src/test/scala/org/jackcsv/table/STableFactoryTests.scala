@@ -39,7 +39,7 @@ class STableFactoryTests extends FunSuite with BeforeAndAfterAll {
 
   test("should create table from values") {
     val row = "one" :: "two" :: "three" :: Nil
-    val table = new STable(row :: row :: row :: Nil)
+    val table:STable = row :: row :: row :: Nil
 
     table.size shouldEqual(3, 3)
     table.column(1).size shouldEqual 3

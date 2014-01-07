@@ -24,14 +24,20 @@ class STable(var name: String, protected val _rows: Seq[Seq[SCell]]) {
 
   def rows: Seq[SCellSeq] = _rows map (new SCellSeq(_))
 
-  override def toString = name
+  override def toString = s"$name:[${rows.map(_.mkString("\t", "|", "")).mkString("\n", "\n", "\n")}]"
+
+  override def equals(obj:Any) = obj match {
+    case t:STable => rows equals t.rows
+    case _ => false
+  }
 }
 
 object STable {
 
   private val managed = new ListBuffer[STable]
 
-  implicit def convert(values: Traversable[Traversable[Any]]): STable = new STable(values.map(SCellSeq.convert).toSeq)
+  implicit def apply(values: Traversable[Traversable[Any]]): STable =
+    new STable(values.map(SCellSeq.apply).toSeq)
 
   def tables = managed.toSeq
 
@@ -45,10 +51,7 @@ trait PrimaryKey {
   private var normalRows = SCellSeq.normalize(_rows)(keyIndex)
 
   def +(other: STable with PrimaryKey): STable with PrimaryKey =
-    new STable(rows) with PrimaryKey {
-      this += other
-      val keyIndex = self.keyIndex
-    }
+    new STable(rows) with PrimaryKey { val keyIndex = self.keyIndex; this += other }
 
   def +=(other: STable with PrimaryKey): Unit = {
     normalRows = SCellSeq.normalize(rows ++ other.compatibleRows(this))(keyIndex)
@@ -62,12 +65,11 @@ trait PrimaryKey {
 
     val pattern = new ListBuffer[(Int, Int)]
     pattern += Tuple2(keyIndex, other.keyIndex)
-    pattern ++= firstIndex until keyIndex map (i => (i, i + leftShift))
-    pattern ++= lastIndex until keyIndex map (i => (i, i + rightShift))
+    pattern ++= firstIndex until keyIndex by 1 map (i => (i, i + leftShift))
+    pattern ++= lastIndex until keyIndex by -1 map (i => (i, i + rightShift))
 
     rows.map(_.transform(pattern))
   }
 
   override def rows = normalRows
-
 }

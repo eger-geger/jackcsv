@@ -9,7 +9,7 @@ class SCellSeqTests extends FunSuite with Matchers with TableDrivenPropertyCheck
     ("---row 1---",       "---row 2---",  "---row 3---"),
     ("a"::"b"::Nil,       "c"::"d"::Nil,  "a, c"::"b, d"::Nil),
     ("a"::Nil,            "b"::"c"::Nil,  "a, b"::"c"::Nil),
-    (NullSCell::1::Nil,   2::3::Nil,      2::4f::Nil),
+    (EmptyCell::1::Nil,   2::3::Nil,      2::4f::Nil),
     (Nil,                 3::5::Nil,      3::5::Nil)
   )
 
