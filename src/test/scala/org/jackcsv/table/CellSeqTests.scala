@@ -1,11 +1,11 @@
-package com.jackcsv.table
+package org.jackcsv.table
 
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{Matchers, FunSuite}
 
-class SCellSeqTests extends FunSuite with Matchers with TableDrivenPropertyChecks {
+class CellSeqTests extends FunSuite with Matchers with TableDrivenPropertyChecks {
 
-  val rowsToAdd = Table[SCellSeq, SCellSeq, SCellSeq](
+  val rowsToAdd = Table[CellSeq, CellSeq, CellSeq](
     ("---row 1---",       "---row 2---",  "---row 3---"),
     ("a"::"b"::Nil,       "c"::"d"::Nil,  "a, c"::"b, d"::Nil),
     ("a"::Nil,            "b"::"c"::Nil,  "a, b"::"c"::Nil),
@@ -21,7 +21,7 @@ class SCellSeqTests extends FunSuite with Matchers with TableDrivenPropertyCheck
 
   test("should alter existing cell sequence") {
     forAll(rowsToAdd){
-      (row1, row2, row3) => new SCellSeq(row1) {this += row2} shouldEqual row3
+      (row1, row2, row3) => new CellSeq(row1) {this += row2} shouldEqual row3
     }
   }
 

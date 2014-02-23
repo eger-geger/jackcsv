@@ -1,6 +1,6 @@
-package com.jackcsv.io
+package org.jackcsv.io
 
-import com.jackcsv.table.STable
+import org.jackcsv.table.STable
 
 class TableCsvWriter(table: STable) extends CsvWriter {
 

@@ -1,4 +1,4 @@
-package com.jackcsv.io
+package org.jackcsv.io
 
 import java.io.{FileWriter, File}
 import org.supercsv.prefs.CsvPreference

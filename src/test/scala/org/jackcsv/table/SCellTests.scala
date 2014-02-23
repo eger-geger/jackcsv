@@ -1,4 +1,4 @@
-package com.jackcsv.table
+package org.jackcsv.table
 
 import org.scalatest.FunSuite
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -8,7 +8,7 @@ class SCellTests extends FunSuite with TableDrivenPropertyChecks with ShouldMatc
 
   val nul = EmptyCell
 
-  val cellsToAdd = Table[SCell, SCell, SCell](
+  val cellsToAdd = Table[Cell, Cell, Cell](
     ("cell1", "cell2",  "cell3"),
     ("a", "b",  "a, b"),
     (1f,  2f,   3f),
@@ -25,13 +25,13 @@ class SCellTests extends FunSuite with TableDrivenPropertyChecks with ShouldMatc
     forAll(cellsToAdd) {
       (cell1, cell2, cell3) => {
         cell1 + cell2 shouldEqual cell3
-        new SCell(cell1.value) {this += cell2} shouldEqual cell3
+        new Cell(cell1.value) {this += cell2} shouldEqual cell3
       }
     }
   }
 
   test("should create empty cell"){
-    SCell(null) should be theSameInstanceAs EmptyCell
+    Cell(null) should be theSameInstanceAs EmptyCell
   }
 
 }

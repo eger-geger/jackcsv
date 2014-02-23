@@ -1,4 +1,4 @@
-package com.jackcsv.table
+package org.jackcsv.table
 
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest.matchers.ShouldMatchers._
@@ -49,7 +49,7 @@ class STableFactoryTests extends FunSuite with BeforeAndAfterAll {
 
   test("should create table from tabbed strings") {
     val strings = "one \t two \t three"
-    val table = STableFactory.create(strings + '\n' + strings + '\n' + strings)
+    val table = TableFactory.create(strings + '\n' + strings + '\n' + strings)
 
     table.size shouldEqual(3, 3)
     table.column(1).size shouldEqual 3
@@ -58,7 +58,7 @@ class STableFactoryTests extends FunSuite with BeforeAndAfterAll {
   }
 
   test("should create table from standard csv file") {
-    val table = STableFactory.create(standardCsv.toFile, CsvPreference.STANDARD_PREFERENCE)
+    val table = TableFactory.create(standardCsv.toFile, CsvPreference.STANDARD_PREFERENCE)
 
     table.size shouldEqual(3, 3)
     table.column(1).size shouldEqual 3
@@ -67,7 +67,7 @@ class STableFactoryTests extends FunSuite with BeforeAndAfterAll {
   }
 
   test("should create table from excel csv file") {
-    val table = STableFactory.create(excelCsv.toFile, CsvPreference.EXCEL_PREFERENCE)
+    val table = TableFactory.create(excelCsv.toFile, CsvPreference.EXCEL_PREFERENCE)
 
     table.size shouldEqual(3, 3)
     table.column(1).size shouldEqual 3

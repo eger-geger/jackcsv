@@ -1,18 +1,20 @@
-package com.jackcsv.table
+package org.jackcsv.table
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
+import scala.reflect.ClassTag
+import org.jackcsv.NameGenerator
 
-class STable(var name: String, protected val _rows: Seq[Seq[SCell]]) {
+class STable(var name: String, val rows: Seq[Seq[Cell]]) {
 
   STable.managed += this
 
-  def this(cells: Seq[Seq[SCell]]) = this(NameGenerator.generatedName[STable], cells)
+  def this(cells: Seq[Seq[Cell]]) = this(NameGenerator.generatedName[STable], cells)
 
-  def apply(r: Int)(c: Int): SCell = rows(r)(c)
+  def apply(r: Int)(c: Int): Cell = rows(r)(c)
 
-  def row(idx: Int): SCellSeq = new SCellSeq(rows(idx))
+  def row(idx: Int): CellSeq = new CellSeq(rows(idx))
 
-  def column(idx: Int): SCellSeq = new SCellSeq(0 until rowCount map (apply(_)(idx)))
+  def column(idx: Int): CellSeq = new CellSeq(0 until rowCount map (apply(_)(idx)))
 
   def columnCount = rows.maxBy(_.size).size
 
@@ -22,54 +24,24 @@ class STable(var name: String, protected val _rows: Seq[Seq[SCell]]) {
 
   def headers: Seq[String] = 1 to columnCount map (i => s"column $i")
 
-  def rows: Seq[SCellSeq] = _rows map (new SCellSeq(_))
-
   override def toString = s"$name:[${rows.map(_.mkString("\t", "|", "")).mkString("\n", "\n", "\n")}]"
 
-  override def equals(obj:Any) = obj match {
-    case t:STable => rows equals t.rows
+  override def equals(obj: Any) = obj match {
+    case t: STable => rows equals t.rows
     case _ => false
   }
 }
 
 object STable {
 
-  private val managed = new ListBuffer[STable]
+  private val managed = new mutable.HashSet[STable]
 
   implicit def apply(values: Traversable[Traversable[Any]]): STable =
-    new STable(values.map(SCellSeq.apply).toSeq)
+    new STable(values.map(CellSeq.apply).toSeq)
 
-  def tables = managed.toSeq
+  implicit def toCellArray[B >: Cell : ClassTag](table:STable) : Array[Array[B]] =
+    table.rows.map(_.toArray[B]).toArray
 
-}
+  def tables = managed.toSet
 
-trait PrimaryKey {
-  self: STable =>
-
-  val keyIndex: Int
-
-  private var normalRows = SCellSeq.normalize(_rows)(keyIndex)
-
-  def +(other: STable with PrimaryKey): STable with PrimaryKey =
-    new STable(rows) with PrimaryKey { val keyIndex = self.keyIndex; this += other }
-
-  def +=(other: STable with PrimaryKey): Unit = {
-    normalRows = SCellSeq.normalize(rows ++ other.compatibleRows(this))(keyIndex)
-  }
-
-  def compatibleRows(other: STable with PrimaryKey): Seq[SCellSeq] = {
-    val leftShift = other.columnCount
-    val rightShift = leftShift - 1
-    val lastIndex = columnCount - 1
-    val firstIndex = 0
-
-    val pattern = new ListBuffer[(Int, Int)]
-    pattern += Tuple2(keyIndex, other.keyIndex)
-    pattern ++= firstIndex until keyIndex by 1 map (i => (i, i + leftShift))
-    pattern ++= lastIndex until keyIndex by -1 map (i => (i, i + rightShift))
-
-    rows.map(_.transform(pattern))
-  }
-
-  override def rows = normalRows
 }

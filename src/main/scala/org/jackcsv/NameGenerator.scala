@@ -1,4 +1,4 @@
-package com.jackcsv.table
+package org.jackcsv
 
 import scala.reflect.ClassTag
 

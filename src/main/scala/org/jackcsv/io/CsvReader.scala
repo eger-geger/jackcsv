@@ -1,4 +1,4 @@
-package com.jackcsv.io
+package org.jackcsv.io
 
 import org.supercsv.io.{ICsvListReader, CsvListReader}
 import java.io.{File, FileReader}
