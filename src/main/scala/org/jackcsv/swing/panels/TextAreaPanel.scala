@@ -1,6 +1,5 @@
 package org.jackcsv.swing.panels
 
-import akka.actor.{Props, Actor}
 import scala.swing._
 
 class TextAreaPanel extends GridBagPanel {
@@ -26,9 +25,11 @@ class TextAreaPanel extends GridBagPanel {
   })
 
   def title = titleLabel.text
-  def title_=(value:String) = titleLabel.text = value
+
+  def title_=(value: String) = titleLabel.text = value
 
   def content = contentTxt.text
-  def content_=(value:String) = contentTxt.text = value
+
+  def content_=(value: String) = contentTxt.text = value
 
 }

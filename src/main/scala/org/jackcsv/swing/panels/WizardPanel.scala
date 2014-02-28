@@ -2,23 +2,36 @@ package org.jackcsv.swing.panels
 
 import scala.swing._
 import scala.swing.event.Event
+import org.jackcsv.NavigableBuffer
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 class WizardPanel extends GridBagPanel {
 
-  private val infoLabel = new Label
+  private val _components = new NavigableBuffer[Component]
 
   private val contentPanel = new BorderPanel {
-    def replaceContentWith(component: Component) {
+    def content:Component = contents.applyOrElse(0, (_:Int) => null)
+
+    def content_=(value: Component) {
       _contents.clear()
 
-      add(component, BorderPanel.Position.Center)
+      add(value, BorderPanel.Position.Center)
 
       revalidate()
+
+      WizardPanel.this.publish(ComponentLoaded(value))
     }
   }
 
   private val finishBtn = Button("Finish"){
-    WizardPanel.this.publish(WizardFinished(WizardPanel.this))
+    try{
+      _components.curr.foreach(controllers.apply)
+      WizardPanel.this.publish(WizardFinished(WizardPanel.this))
+    } catch {
+      case th:Throwable =>
+        WizardPanel.this.publish(ExceptionThrown(WizardPanel.this, th))
+    }
   }
 
   private val cancelBtn = Button("Cancel"){
@@ -26,25 +39,62 @@ class WizardPanel extends GridBagPanel {
   }
 
   private val nextBtn = Button("Next") {
-    WizardPanel.this.publish(NextWizardStep(WizardPanel.this))
+    try{
+      _components.curr.foreach(controllers.apply)
+      _components.next.foreach(contentPanel.content = _)
+    } catch {
+      case th:Throwable =>
+        WizardPanel.this.publish(ExceptionThrown(WizardPanel.this, th))
+    }
   }
 
   private val prevBtn = Button("Prev") {
-    WizardPanel.this.publish(PrevWizardStep(WizardPanel.this))
+    _components.prev.foreach(contentPanel.content = _)
+  }
+
+  val controllers = new PartialFunction[Component, Unit] {
+
+    private val _controllers = new ListBuffer[PartialFunction[Component, Unit]]
+
+    override def apply(value: Component): Unit = {
+      for(h <- _controllers if h isDefinedAt value) h apply value
+    }
+
+    override def isDefinedAt(x: Component): Boolean = _controllers.exists(_ isDefinedAt x)
+
+    def += (action:PartialFunction[Component, Unit]) = _controllers += action
+  }
+
+  reactions += {
+    case _:ComponentLoaded =>
+      nextBtn.enabled = _components.hasNext
+      prevBtn.enabled = _components.hasPrev
+      finishBtn.enabled = !_components.hasNext
+
+    case ExceptionThrown(wizardPanel, throwable) =>
+      Dialog.showMessage(wizardPanel, throwable.getMessage, "[Error]")
   }
 
   add(contentPanel, new Constraints() {
     grid = (0, 0)
     weighty = 10
-    gridwidth = 3
+    gridwidth = 4
     fill = GridBagPanel.Fill.Both
     insets = WizardPanel.defaultInsets
   })
 
-  add(infoLabel, new Constraints {
+  add(cancelBtn, new Constraints{
+    grid = (0, 1)
+    weighty = 0.5
+    weightx = 1
+    insets = WizardPanel.defaultInsets
+    fill = GridBagPanel.Fill.Horizontal
+  })
+
+  add(prevBtn, new Constraints {
     grid = (1, 1)
     weighty = 0.5
-    weightx = 2
+    weightx = 1
     insets = WizardPanel.defaultInsets
     fill = GridBagPanel.Fill.Horizontal
   })
@@ -57,28 +107,26 @@ class WizardPanel extends GridBagPanel {
     fill = GridBagPanel.Fill.Horizontal
   })
 
-  add(prevBtn, new Constraints {
-    grid = (0, 1)
+  add(finishBtn, new Constraints {
+    grid = (3, 1)
     weighty = 0.5
     weightx = 1
     insets = WizardPanel.defaultInsets
     fill = GridBagPanel.Fill.Horizontal
   })
 
-  def enableFinish = finishBtn.enabled
-  def enableFinish_=(value:Boolean) = finishBtn.enabled = value
+  def += (value:Component) = {
+    _components += value
+    _components.curr.foreach(contentPanel.content = _)
+  }
 
-  def enableNext = nextBtn.enabled
-  def enableNext_=(value: Boolean) = nextBtn.enabled = value
+  def components:Seq[Component] = _components
 
-  def enablePrev = prevBtn.enabled
-  def enablePrev_=(value: Boolean) = prevBtn.enabled = value
-
-  def content:Component = contentPanel.contents.headOption.orNull
-  def content_=(value:Component) = contentPanel.replaceContentWith(value)
-
-  def infoText = infoLabel.text
-  def infoText_=(value:String) = infoLabel.text = value
+  def components_=(value:Seq[Component]) = {
+    _components.clear()
+    _components ++= value
+    _components.curr.foreach(contentPanel.content = _)
+  }
 
 }
 
@@ -92,7 +140,8 @@ trait WizardPanelEvent extends Event {
   val wizardPanel:WizardPanel
 }
 
+case class ExceptionThrown(wizardPanel:WizardPanel, throwable:Throwable) extends Event
+
+case class ComponentLoaded(component:Component) extends Event
 case class WizardCanceled(wizardPanel:WizardPanel) extends WizardPanelEvent
 case class WizardFinished(wizardPanel:WizardPanel) extends WizardPanelEvent
-case class NextWizardStep(wizardPanel:WizardPanel) extends WizardPanelEvent
-case class PrevWizardStep(wizardPanel:WizardPanel) extends WizardPanelEvent

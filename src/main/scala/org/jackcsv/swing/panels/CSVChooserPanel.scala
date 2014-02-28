@@ -1,32 +1,64 @@
 package org.jackcsv.swing.panels
 
-import java.awt.BorderLayout
 import java.io.File
-import javax.swing.JFileChooser
 import javax.swing.filechooser.FileFilter
+import org.jackcsv.swing.panels.FileDialogMode.FileDialogMode
 import org.supercsv.prefs.CsvPreference
 import scala.swing._
+import scala.swing.event.MouseClicked
+import org.jackcsv.Logger
 
-class CSVChooserPanel extends GridBagPanel {
+class CSVChooserPanel(fileDialogMode: FileDialogMode) extends GridBagPanel with Logger {
 
-  private val fileChooser = new JFileChooser {
-    this.setControlButtonsAreShown(false)
-    this.setFileSelectionMode(JFileChooser.FILES_ONLY)
-    this.setFileFilter(new FileFilter {
+  private var _selectedFile: File = null
+
+  private val fileChooser = new FileChooser {
+    controlButtonsAreShown = true
+    fileSelectionMode = FileChooser.SelectionMode.FilesOnly
+    fileFilter = new FileFilter {
       def getDescription: String = "*.csv"
 
       def accept(f: File): Boolean = f.getName.endsWith(".csv")
-    })
+    }
   }
 
-  private val preferenceCbx = new ComboBox[CsvPreference](CSVChooserPanel.csvPreferences)
+  private val preferenceCbx = new ComboBox[CSVPreferenceWrapper](
+    CSVPreferenceWrapper(CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE, "North Europe") ::
+    CSVPreferenceWrapper(CsvPreference.EXCEL_PREFERENCE, "Excel") ::
+    CSVPreferenceWrapper(CsvPreference.STANDARD_PREFERENCE, "Standard") ::
+    CSVPreferenceWrapper(CsvPreference.TAB_PREFERENCE, "Tabs Delimited") :: Nil
+  )
 
-  private val fileChooserPanel = new BorderPanel {
-    peer.add(fileChooser, BorderLayout.CENTER)
+  private val selectedFileTxt = new TextField {
+    this.listenTo(mouse.clicks)
+
+    this.editable = false
+
+    reactions += {
+      case x:MouseClicked =>
+        val result = fileDialogMode match {
+          case FileDialogMode.Open =>
+            fileChooser.showOpenDialog(CSVChooserPanel.this)
+
+          case FileDialogMode.Save =>
+            fileChooser.showSaveDialog(CSVChooserPanel.this)
+        }
+
+        result match {
+          case FileChooser.Result.Approve =>
+            _selectedFile = fileChooser.selectedFile
+
+            if (_selectedFile != null) {
+              this.text = _selectedFile.getAbsolutePath
+            } else {
+              this.text = ""
+            }
+
+          case _ =>
+            fileChooser.selectedFile = _selectedFile
+        }
+    }
   }
-
-  minimumSize = new Dimension(fileChooser.getWidth, (fileChooser.getHeight + preferenceCbx.minimumSize.getHeight +
-    20).toInt)
 
   add(new Label("CSV type:"), new Constraints {
     grid = (0, 0)
@@ -38,31 +70,41 @@ class CSVChooserPanel extends GridBagPanel {
   add(preferenceCbx, new Constraints {
     grid = (1, 0)
     weightx = 1
-    weighty = 0
+    weighty = 1
     insets = new Insets(5, 0, 5, 5)
     fill = GridBagPanel.Fill.Horizontal
   })
 
-  add(fileChooserPanel, new Constraints {
+  add(new Label("Selected File:"), new Constraints{
     grid = (0, 1)
-    gridwidth = 2
+    gridwidth = 1
     weightx = 1
     weighty = 1
     insets = new Insets(5, 5, 5, 5)
-    fill = GridBagPanel.Fill.Both
   })
 
-  protected def selectedFile = fileChooser.getSelectedFile
+  add(selectedFileTxt, new Constraints {
+    grid = (1, 1)
+    gridwidth = 1
+    weightx = 10
+    weighty = 1
+    insets = new Insets(5, 5, 5, 5)
+    fill = GridBagPanel.Fill.Horizontal
+  })
 
-  protected def selectedPref = preferenceCbx.selection.item
+  def selectedFile = _selectedFile
+
+  def selectedPref = preferenceCbx.selection.item.preference
 
 }
 
-object CSVChooserPanel {
+object FileDialogMode extends Enumeration {
+  type FileDialogMode = Value
+  val Open, Save = Value
+}
 
-  val csvPreferences = CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE ::
-    CsvPreference.EXCEL_PREFERENCE ::
-    CsvPreference.STANDARD_PREFERENCE ::
-    CsvPreference.TAB_PREFERENCE :: Nil
+private case class CSVPreferenceWrapper(preference: CsvPreference, name: String) {
+
+  override def toString = name
 
 }

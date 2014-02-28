@@ -23,16 +23,15 @@ object TableController {
     TableFactory.create(file, preferences)
   }
 
-  def joinTables(tables:Seq[NTable]):STable = {
+  def joinTables(tables:Seq[NTable]):NTable = {
     require(tables.size >= 2, "Need at least 2 tables")
 
-    tables.foldLeft(tables(0))((t1, t2) => t1 + t2)
+    tables.tail.foldLeft(tables.head)(_ + _)
   }
 
   def exportTable(file:File, preferences:CsvPreference, table:STable){
     require(file != null, "File is undefined")
     require(!file.isDirectory, "File cannot be folder")
-    require(file.exists(), "File does not exists")
     require(preferences != null, "Preferences are undefined")
     require(table != null, "Table is undefined")
 

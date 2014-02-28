@@ -42,6 +42,6 @@ class NavigableBuffer[A](private val _seq: Seq[A])
 
   override def remove(n: Int): A = listBuffer.remove(n)
 
-  override def clear(): Unit = listBuffer.clear()
+  override def clear(): Unit = {listBuffer.clear(); currentIndex = 0}
 
 }
