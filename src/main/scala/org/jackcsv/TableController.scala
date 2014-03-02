@@ -5,43 +5,43 @@ import org.jackcsv.io.TableCsvWriter
 import org.jackcsv.table.{NTable, TableFactory, STable}
 import org.supercsv.prefs.CsvPreference
 
-object TableController {
+object TableController extends Validation with Localization {
 
   def createTable(source:String):STable = {
-    require(source != null, "Table source is null")
-    require(!source.isEmpty, "Table source is empty")
+    require(source != null,   l("errors.table_source_empty"))
+    require(!source.isEmpty,  l("errors.table_source_empty"))
 
     TableFactory.create(source)
   }
 
   def importTable(file:File, preferences:CsvPreference):STable = {
-    require(file != null, "File is undefined")
-    require(!file.isDirectory, "File cannot be folder")
-    require(file.exists(), "File does not exists")
-    require(preferences != null, "Preferences are undefined")
+    require(file != null,         l("errors.file_not_selected"))
+    require(!file.isDirectory,    l("errors.folder_selected"))
+    require(file.exists(),        l("errors.file_not_selected"))
+    require(preferences != null,  l("errors.csvpref_undefined"))
 
     TableFactory.create(file, preferences)
   }
 
   def joinTables(tables:Seq[NTable]):NTable = {
-    require(tables.size >= 2, "Need at least 2 tables")
+    require(tables.size >= 2, l("errors.need_more_tables"))
 
     tables.tail.foldLeft(tables.head)(_ + _)
   }
 
   def exportTable(file:File, preferences:CsvPreference, table:STable){
-    require(file != null, "File is undefined")
-    require(!file.isDirectory, "File cannot be folder")
-    require(preferences != null, "Preferences are undefined")
-    require(table != null, "Table is undefined")
+    require(file != null,         l("errors.file_not_selected"))
+    require(!file.isDirectory,    l("errors.folder_selected"))
+    require(preferences != null,  l("errors.csvpref_undefined"))
+    require(table != null,        l("errors.table_not_selected"))
 
     new TableCsvWriter(table).writeStandardCsv(file)
   }
 
   def renameTable(name:String, table:STable){
-    require(name != null, "Name is undefined")
-    require(!name.isEmpty, "Name is empty")
-    require(table != null, "Table is undefined")
+    require(name != null,   l("errors.table_name_empty"))
+    require(!name.isEmpty,  l("errors.table_name_empty"))
+    require(table != null,  l("errors.table_not_selected"))
 
     table.name = name
   }

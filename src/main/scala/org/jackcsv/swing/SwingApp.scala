@@ -1,18 +1,17 @@
 package org.jackcsv.swing
 
-import akka.actor.ActorSystem
+import org.jackcsv.Localization
 import org.jackcsv.swing.panels._
 import org.jackcsv.swing.utils.MenuBuilder._
-import scala.swing._
+import org.jackcsv.swing.wizards._
+import org.jackcsv.table.STable
 import scala.swing.TabbedPane.Page
-import org.jackcsv.swing.panels.WizardCanceled
-import org.jackcsv.swing.panels.WizardFinished
-import org.jackcsv.table.{NTable, STable}
-import org.jackcsv.TableController
+import scala.swing._
+import java.util.Locale
 
-object SwingApp extends SimpleSwingApplication {
+object SwingApp extends SimpleSwingApplication with Localization {
 
-  AppFrame.title = "Swing Table Utility"
+  AppFrame.title = l("app.title")
   AppFrame.minimumSize = new Dimension(400, 400)
   AppFrame.preferredSize = new Dimension(400, 400)
 
@@ -20,152 +19,64 @@ object SwingApp extends SimpleSwingApplication {
 
 }
 
-object AppFrame extends MainFrame {
-
-  private implicit val actorSystem = ActorSystem("UI")
+object AppFrame extends MainFrame with Localization {
 
   private object TabbedPane extends XTabbedPane {
     reactions += {
-      case e @ (WizardCanceled(_) | WizardFinished(_)) =>
+      case e@(WizardCanceled(_) | WizardFinished(_)) =>
         pages.find(_.content == e.asInstanceOf[WizardPanelEvent].wizardPanel).foreach(pages -= _)
+    }
+
+    def +=(title: String, component: Component) {
+      pages += new Page(title, component)
+
+      listenTo(component)
     }
   }
 
   contents = TabbedPane
 
   menuBar = new MenuBar {
-    _contents += new Menu("Tables") {
-      _contents += "Show" --> {
-        TabbedPane.pages += new Page("[Show Table]", new WizardPanel{
-          this += new STableListPanel
-
-          controllers += {
-            case p:STableListPanel =>
-              require(p.selectedTable != null, "Table not selected")
-              TabbedPane.pages += new Page(p.selectedTable.name, new TablePanel(p.selectedTable))
-          }
-
-          TabbedPane.listenTo(this)
-        })
+    _contents += new Menu(l("menu.tables")) {
+      _contents += l("menu.tables.show") --> {
+        TabbedPane +=(l("page.show_table"), new ShowTableWizard(displayTable))
       }
 
-      _contents += "Combine" --> {
-        TabbedPane.pages += new Page("[Join Tables]", new WizardPanel{
-          private var table:NTable = null
-
-          private val tableListPanel = new NTableListPanel
-
-          private val tableNamePanel = new TextFieldPanel {
-            title = "Table Name:"
-          }
-
-          this += tableListPanel
-          this += tableNamePanel
-
-          reactions += {
-            case ComponentLoaded(c:TextFieldPanel) =>
-              c.content = table.name
-          }
-
-          controllers += {
-            case p:NTableListPanel =>
-              table = TableController.joinTables(p.tables)
-
-            case p:TextFieldPanel =>
-              TableController.renameTable(p.content, table)
-          }
-
-          TabbedPane.listenTo(this)
-        })
+      _contents += l("menu.tables.join") --> {
+        TabbedPane +=(l("page.join_tables"), new JoinTablesWizard(displayTable))
       }
 
-      _contents += new Menu("Import") {
-        _contents += "...from CSV" --> {
-          TabbedPane.pages += new Page("[Import Table]", new WizardPanel{
-            var table:STable = null
-
-            private val fileChooserPanel = new CSVChooserPanel(FileDialogMode.Open)
-
-            private val tableNamePanel = new TextFieldPanel {
-              title = "Table Name:"
-            }
-
-            this += fileChooserPanel
-            this += tableNamePanel
-
-            reactions += {
-              case ComponentLoaded(c:TextFieldPanel) =>
-                c.content = table.name
-            }
-
-            controllers += {
-              case p:CSVChooserPanel =>
-                table = TableController.importTable(p.selectedFile, p.selectedPref)
-
-              case p:TextFieldPanel =>
-                TableController.renameTable(p.content, table)
-            }
-
-            TabbedPane.listenTo(this)
-          })
+      _contents += new Menu(l("menu.tables.import")) {
+        _contents += l("menu.tables.import.csv") --> {
+          TabbedPane +=(l("page.import_table"), new ImportTableWizard(displayTable))
         }
 
-        _contents += "...from text" --> {
-          TabbedPane.pages += new Page("[Import Table]", new WizardPanel {
-            var table:STable = null
-
-            private val tableSourcePanel = new TextAreaPanel{
-              title = "Input Table:"
-            }
-
-            private val tableNamePanel = new TextFieldPanel {
-              title = "Table Name:"
-            }
-
-            this += tableSourcePanel
-            this += tableNamePanel
-
-            reactions += {
-              case ComponentLoaded(c:TextFieldPanel) =>
-                c.content = table.name
-            }
-
-            controllers += {
-              case p:TextAreaPanel =>
-                table = TableController.createTable(p.content)
-
-              case p:TextFieldPanel =>
-                TableController.renameTable(p.content, table)
-            }
-
-            TabbedPane.listenTo(this)
-          })
+        _contents += l("menu.tables.import.text") --> {
+          TabbedPane +=(l("page.import_table"), new InputTableWizard(displayTable))
         }
       }
 
-      _contents += "Export to CSV" --> {
-        TabbedPane.pages += new Page("[Export Table]", new WizardPanel{
-          private var table:STable = null
-
-          private val tableListPanel = new STableListPanel
-
-          private val fileChooserPanel = new CSVChooserPanel(FileDialogMode.Save)
-
-          this += tableListPanel
-          this += fileChooserPanel
-
-          controllers += {
-            case c:STableListPanel =>
-              require(tableListPanel.selectedTable != null, "Table not selected")
-              table = tableListPanel.selectedTable
-
-            case c:CSVChooserPanel =>
-              TableController.exportTable(fileChooserPanel.selectedFile, fileChooserPanel.selectedPref, table)
-          }
-
-          TabbedPane.listenTo(this)
-        })
+      _contents += l("menu.tables.export") --> {
+        TabbedPane +=(l("page.export_table"), new ExportTableWizard)
       }
     }
+
+    _contents += new Menu(l("menu.language")){
+      _contents ++= new ButtonGroup(
+        new RadioMenuItem(l("menu.language.en")){
+          Localization.locale = Locale.ENGLISH
+          AppFrame.this.repaint()
+        },
+
+        new RadioMenuItem(l("menu.language.ru")) {
+          Localization.locale = Locale.forLanguageTag("ru")
+          AppFrame.this.repaint()
+        }
+      ).buttons
+    }
+  }
+
+  private def displayTable(table: STable) {
+    TabbedPane.pages += new Page(table.name, new TablePanel(table))
   }
 }

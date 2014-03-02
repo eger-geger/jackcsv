@@ -2,11 +2,11 @@ package org.jackcsv.swing.panels
 
 import scala.swing._
 import scala.swing.event.Event
-import org.jackcsv.NavigableBuffer
+import org.jackcsv.{Localization, NavigableBuffer}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class WizardPanel extends GridBagPanel {
+class WizardPanel extends GridBagPanel with Localization {
 
   private val _components = new NavigableBuffer[Component]
 

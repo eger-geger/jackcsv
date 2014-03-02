@@ -14,9 +14,7 @@ class STableListPanel extends GridBagPanel {
 
   tableListView.selection.reactions += {
     case SelectionChanged(_) =>
-      if(selectedTable != null){
-        selectedTableLabel.text = selectedTable.name
-      }
+      selectedTable.foreach(t => selectedTableLabel.text = t.name)
   }
 
   add(new Label("Selected Table:"), new Constraints{
@@ -39,6 +37,6 @@ class STableListPanel extends GridBagPanel {
     fill = GridBagPanel.Fill.Both
   })
 
-  def selectedTable:STable = tableListView.selection.items.headOption.orNull
+  def selectedTable:Option[STable] = tableListView.selection.items.headOption
 
 }

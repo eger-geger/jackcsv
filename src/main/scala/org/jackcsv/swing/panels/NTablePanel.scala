@@ -13,20 +13,20 @@ class NTablePanel(tables: Seq[STable]) extends GridBagPanel {
 
   private val columnCbx = new ComboBox(columnModel)
 
-  private val tableCbx = new ComboBox(tables) {
-    selection.reactions += {
-      case SelectionChanged(cbx: ComboBox[_]) =>
-        selectedTable match {
-          case Some(table) =>
-            columnModel.clear()
-            columnModel ++= table.headers
-            columnCbx.repaint()
+  private val tableCbx = new ComboBox(tables)
 
-          case None =>
-            columnModel.clear()
-            columnCbx.repaint()
-        }
-    }
+  tableCbx.selection.reactions += {
+    case SelectionChanged(`tableCbx`) =>
+      selectedTable match {
+        case Some(table) =>
+          columnModel.clear()
+          columnModel ++= table.headers
+          columnCbx.repaint()
+
+        case None =>
+          columnModel.clear()
+          columnCbx.repaint()
+      }
   }
 
   border = NTablePanel.defaultBorder
