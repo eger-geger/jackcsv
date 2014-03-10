@@ -1,26 +1,35 @@
 package org.jackcsv.swing
 
-import org.jackcsv.swing.utils.MenuBuilder
-import MenuBuilder._
+import java.util.ResourceBundle
 import javax.swing.JPopupMenu
-import org.jackcsv.Logger
-import scala.swing.TabbedPane.Page
+import org.jackcsv.i10n.Localization
 import scala.swing.event.SelectionChanged
-import scala.swing.{Component, TabbedPane}
+import scala.swing.{Action, MenuItem, TabbedPane}
 
-class XTabbedPane extends TabbedPane with Logger {
+class XTabbedPane extends TabbedPane with Localization {
 
-  private val removePageMenuItem = "Remove Current Page" --> {
+  private val removePageMenuItem = new MenuItem(Action(Localization.localized("x_tabbed_pane.remove_current_page")) {
     pages -= selection.page
-  }
+  })
 
   selection.reactions += {
-    case SelectionChanged(_) if selection.index > 0 =>
-      removePageMenuItem.peer.setText(s"Remove [${selection.page.title}] Page")
     case SelectionChanged(_) =>
-      removePageMenuItem.peer.setText("Remove Current Page")
+      removePageMenuItem.peer.setText(
+        if (selection.index > 0) {
+          String.format(Localization.localized("x_tabbed_pane.remove_page"), selection.page.title)
+        } else {
+          Localization.localized("x_tabbed_pane.remove_current_page")
+        }
+      )
   }
 
   peer.setComponentPopupMenu(new JPopupMenu {add(removePageMenuItem.peer)})
 
+  override def updateLocalizedStrings(bundle: ResourceBundle): Unit = {
+    if(removePageMenuItem != null){
+      removePageMenuItem.text = bundle.getString("x_tabbed_pane.remove_current_page")
+    }
+
+    repaint()
+  }
 }

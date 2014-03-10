@@ -28,6 +28,8 @@ class NTableListPanel extends FlowPanel {
     tablePanels += panel
 
     contents.insert(contents.size - 1, panel)
+
+    revalidate()
   }
 
   def tables = tablePanels.map(p => p.table).filter(t => t != null).toSeq

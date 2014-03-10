@@ -10,7 +10,7 @@ object TableFactory {
   @throws[TableCreationException]
   def create(input: String): STable =
     try {
-      input.split('\n').map(_.split('\t').toSeq).toSeq
+      input.split('\n').map(_.split(',').toSeq).toSeq
     } catch {
       case th: Throwable => throw new TableCreationException(th)
     }

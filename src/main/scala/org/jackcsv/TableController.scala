@@ -1,47 +1,48 @@
 package org.jackcsv
 
 import java.io.File
-import org.jackcsv.io.TableCsvWriter
+import org.jackcsv.i10n.Localization
 import org.jackcsv.table.{NTable, TableFactory, STable}
 import org.supercsv.prefs.CsvPreference
+import org.jackcsv.io.CsvWriter
 
-object TableController extends Validation with Localization {
+object TableController extends Validation {
 
-  def createTable(source:String):STable = {
-    require(source != null,   l("errors.table_source_empty"))
-    require(!source.isEmpty,  l("errors.table_source_empty"))
+  def createTable(source: String): STable = {
+    require(source != null, Localization.localized("errors.table_source_empty"))
+    require(!source.isEmpty, Localization.localized("errors.table_source_empty"))
 
     TableFactory.create(source)
   }
 
-  def importTable(file:File, preferences:CsvPreference):STable = {
-    require(file != null,         l("errors.file_not_selected"))
-    require(!file.isDirectory,    l("errors.folder_selected"))
-    require(file.exists(),        l("errors.file_not_selected"))
-    require(preferences != null,  l("errors.csvpref_undefined"))
+  def importTable(file: File, preferences: CsvPreference): STable = {
+    require(file != null, Localization.localized("errors.file_not_selected"))
+    require(!file.isDirectory, Localization.localized("errors.folder_selected"))
+    require(file.exists(), Localization.localized("errors.file_not_selected"))
+    require(preferences != null, Localization.localized("errors.csvpref_undefined"))
 
     TableFactory.create(file, preferences)
   }
 
-  def joinTables(tables:Seq[NTable]):NTable = {
-    require(tables.size >= 2, l("errors.need_more_tables"))
+  def joinTables(tables: Seq[NTable]): NTable = {
+    require(tables.size >= 2, Localization.localized("errors.need_more_tables"))
 
     tables.tail.foldLeft(tables.head)(_ + _)
   }
 
-  def exportTable(file:File, preferences:CsvPreference, table:STable){
-    require(file != null,         l("errors.file_not_selected"))
-    require(!file.isDirectory,    l("errors.folder_selected"))
-    require(preferences != null,  l("errors.csvpref_undefined"))
-    require(table != null,        l("errors.table_not_selected"))
+  def exportTable(file: File, preferences: CsvPreference, table: STable) {
+    require(file != null, Localization.localized("errors.file_not_selected"))
+    require(!file.isDirectory, Localization.localized("errors.folder_selected"))
+    require(preferences != null, Localization.localized("errors.csvpref_undefined"))
+    require(table != null, Localization.localized("errors.table_not_selected"))
 
-    new TableCsvWriter(table).writeStandardCsv(file)
+    CsvWriter.write(file, preferences, table.rows.map(_.map(_.value.toString)))
   }
 
-  def renameTable(name:String, table:STable){
-    require(name != null,   l("errors.table_name_empty"))
-    require(!name.isEmpty,  l("errors.table_name_empty"))
-    require(table != null,  l("errors.table_not_selected"))
+  def renameTable(name: String, table: STable) {
+    require(name != null, Localization.localized("errors.table_name_empty"))
+    require(!name.isEmpty, Localization.localized("errors.table_name_empty"))
+    require(table != null, Localization.localized("errors.table_not_selected"))
 
     table.name = name
   }

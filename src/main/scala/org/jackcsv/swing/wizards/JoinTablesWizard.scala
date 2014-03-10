@@ -1,8 +1,10 @@
 package org.jackcsv.swing.wizards
 
 import org.jackcsv.TableController
-import org.jackcsv.swing.panels.{ComponentLoaded, TextFieldPanel, NTableListPanel, WizardPanel}
+import org.jackcsv.swing.panels.{ComponentLoaded, TableNamePanel, NTableListPanel, WizardPanel}
 import org.jackcsv.table.NTable
+import org.jackcsv.i10n.Localization
+import java.util.ResourceBundle
 
 class JoinTablesWizard(onFinish: NTable => Unit) extends WizardPanel {
 
@@ -10,16 +12,14 @@ class JoinTablesWizard(onFinish: NTable => Unit) extends WizardPanel {
 
   private val tableListPanel = new NTableListPanel
 
-  private val tableNamePanel = new TextFieldPanel {
-    title = "Table Name:"
-  }
+  private val tableNamePanel = new TableNamePanel
 
   this += tableListPanel
   this += tableNamePanel
 
   reactions += {
     case ComponentLoaded(`tableNamePanel`) =>
-      tableNamePanel.content = table.name
+      tableNamePanel.tableName = table.name
   }
 
   controllers += {
@@ -27,7 +27,7 @@ class JoinTablesWizard(onFinish: NTable => Unit) extends WizardPanel {
       table = TableController.joinTables(tableListPanel.tables)
 
     case `tableNamePanel` =>
-      TableController.renameTable(tableNamePanel.content, table)
+      TableController.renameTable(tableNamePanel.tableName, table)
       onFinish(table)
 
   }

@@ -2,6 +2,7 @@ package org.jackcsv.swing.panels
 
 import javax.swing.BorderFactory
 import javax.swing.border.EtchedBorder
+import org.jackcsv.ViewModel
 import org.jackcsv.table.{NTable, STable}
 import scala.collection.mutable.ListBuffer
 import scala.swing.event.SelectionChanged
@@ -11,22 +12,15 @@ class NTablePanel(tables: Seq[STable]) extends GridBagPanel {
 
   private val columnModel = new ListBuffer[String]
 
-  private val columnCbx = new ComboBox(columnModel)
+  private val columnCbx = new ComboBox[String](columnModel)
 
-  private val tableCbx = new ComboBox(tables)
+  private val tableCbx = new ComboBox(ViewModel.empty :: ViewModel.fromSeq[STable](tables, _.name).toList ::: Nil)
 
   tableCbx.selection.reactions += {
     case SelectionChanged(`tableCbx`) =>
-      selectedTable match {
-        case Some(table) =>
-          columnModel.clear()
-          columnModel ++= table.headers
-          columnCbx.repaint()
-
-        case None =>
-          columnModel.clear()
-          columnCbx.repaint()
-      }
+      columnModel.clear()
+      selectedTable.foreach(columnModel ++= _.headers)
+      columnCbx.repaint()
   }
 
   border = NTablePanel.defaultBorder
@@ -61,11 +55,12 @@ class NTablePanel(tables: Seq[STable]) extends GridBagPanel {
   }
 
   def table_=(value: NTable) = {
-    tableCbx.selection.item = value
+    tableCbx.selection.item = ViewModel(table)
     columnCbx.selection.index = value.keyIndex
   }
 
-  private def selectedTable: Option[STable] = Option(tableCbx.selection.item)
+  private def selectedTable: Option[STable] =
+    Option(tableCbx.selection.item.model)
 
   private def selectedColumn: Option[Int] = {
     val selectedIndex = columnCbx.selection.index

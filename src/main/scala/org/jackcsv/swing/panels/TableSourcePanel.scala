@@ -1,14 +1,20 @@
 package org.jackcsv.swing.panels
 
 import scala.swing._
+import org.jackcsv.i10n.Localization
+import java.util.ResourceBundle
 
-class TextAreaPanel extends GridBagPanel {
+class TableSourcePanel extends GridBagPanel {
 
-  private val titleLabel = new Label
+  private val titleLabel = new Label with Localization {
+    override def updateLocalizedStrings(bundle: ResourceBundle): Unit = {
+      text = bundle.getString("table_source_panel.title")
+    }
+  }
 
   private val contentTxt = new TextArea
 
-  add(new Label("Table Source:"), new Constraints {
+  add(titleLabel, new Constraints {
     grid = (0, 0)
     weighty = 0
     weightx = 0
@@ -23,10 +29,6 @@ class TextAreaPanel extends GridBagPanel {
     insets = new Insets(5, 5, 5, 5)
     fill = GridBagPanel.Fill.Both
   })
-
-  def title = titleLabel.text
-
-  def title_=(value: String) = titleLabel.text = value
 
   def content = contentTxt.text
 

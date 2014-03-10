@@ -1,17 +1,18 @@
 package org.jackcsv.swing.panels
 
+import java.util.ResourceBundle
+import org.jackcsv.NavigableBuffer
+import org.jackcsv.i10n.{SwingLocalization, Localization}
+import scala.collection.mutable.ListBuffer
 import scala.swing._
 import scala.swing.event.Event
-import org.jackcsv.{Localization, NavigableBuffer}
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 class WizardPanel extends GridBagPanel with Localization {
 
   private val _components = new NavigableBuffer[Component]
 
   private val contentPanel = new BorderPanel {
-    def content:Component = contents.applyOrElse(0, (_:Int) => null)
+    def content: Component = contents.applyOrElse(0, (_: Int) => null)
 
     def content_=(value: Component) {
       _contents.clear()
@@ -24,55 +25,56 @@ class WizardPanel extends GridBagPanel with Localization {
     }
   }
 
-  private val finishBtn = Button("Finish"){
-    try{
-      _components.curr.foreach(controllers.apply)
-      WizardPanel.this.publish(WizardFinished(WizardPanel.this))
-    } catch {
-      case th:Throwable =>
-        WizardPanel.this.publish(ExceptionThrown(WizardPanel.this, th))
-    }
-  }
-
-  private val cancelBtn = Button("Cancel"){
-    WizardPanel.this.publish(WizardCanceled(WizardPanel.this))
-  }
-
-  private val nextBtn = Button("Next") {
-    try{
-      _components.curr.foreach(controllers.apply)
-      _components.next.foreach(contentPanel.content = _)
-    } catch {
-      case th:Throwable =>
-        WizardPanel.this.publish(ExceptionThrown(WizardPanel.this, th))
-    }
-  }
-
-  private val prevBtn = Button("Prev") {
-    _components.prev.foreach(contentPanel.content = _)
-  }
-
   val controllers = new PartialFunction[Component, Unit] {
 
     private val _controllers = new ListBuffer[PartialFunction[Component, Unit]]
 
     override def apply(value: Component): Unit = {
-      for(h <- _controllers if h isDefinedAt value) h apply value
+      for (h <- _controllers if h isDefinedAt value) h apply value
     }
 
     override def isDefinedAt(x: Component): Boolean = _controllers.exists(_ isDefinedAt x)
 
-    def += (action:PartialFunction[Component, Unit]) = _controllers += action
+    def +=(action: PartialFunction[Component, Unit]) = _controllers += action
+  }
+
+  private val finishBtn = SwingLocalization.createLocalizedButton("wizard_panel.finish") {
+    try {
+      _components.curr.foreach(controllers.apply)
+
+      WizardPanel.this.publish(WizardFinished(WizardPanel.this))
+    } catch {
+      case th: Throwable =>
+        WizardPanel.this.publish(ExceptionThrown(WizardPanel.this, th))
+    }
+  }
+
+  private val cancelBtn = SwingLocalization.createLocalizedButton("wizard_panel.cancel") {
+    WizardPanel.this.publish(WizardCanceled(WizardPanel.this))
+  }
+
+  private val nextBtn = SwingLocalization.createLocalizedButton("wizard_panel.next") {
+    try {
+      _components.curr.foreach(controllers.apply)
+      _components.next.foreach(contentPanel.content = _)
+    } catch {
+      case th: Throwable =>
+        WizardPanel.this.publish(ExceptionThrown(WizardPanel.this, th))
+    }
+  }
+
+  private val prevBtn = SwingLocalization.createLocalizedButton("wizard_panel.prev") {
+    _components.prev.foreach(contentPanel.content = _)
   }
 
   reactions += {
-    case _:ComponentLoaded =>
+    case _: ComponentLoaded =>
       nextBtn.enabled = _components.hasNext
       prevBtn.enabled = _components.hasPrev
       finishBtn.enabled = !_components.hasNext
 
     case ExceptionThrown(wizardPanel, throwable) =>
-      Dialog.showMessage(wizardPanel, throwable.getMessage, "[Error]")
+      Dialog.showMessage(wizardPanel, throwable.getMessage, Localization.localized("wizard_panel.error_dialog.title"))
   }
 
   add(contentPanel, new Constraints() {
@@ -83,7 +85,7 @@ class WizardPanel extends GridBagPanel with Localization {
     insets = WizardPanel.defaultInsets
   })
 
-  add(cancelBtn, new Constraints{
+  add(cancelBtn, new Constraints {
     grid = (0, 1)
     weighty = 0.5
     weightx = 1
@@ -115,19 +117,20 @@ class WizardPanel extends GridBagPanel with Localization {
     fill = GridBagPanel.Fill.Horizontal
   })
 
-  def += (value:Component) = {
+  def +=(value: Component) = {
     _components += value
     _components.curr.foreach(contentPanel.content = _)
   }
 
-  def components:Seq[Component] = _components
+  def components: Seq[Component] = _components
 
-  def components_=(value:Seq[Component]) = {
+  def components_=(value: Seq[Component]) = {
     _components.clear()
     _components ++= value
     _components.curr.foreach(contentPanel.content = _)
   }
 
+  override def updateLocalizedStrings(bundle: ResourceBundle): Unit = this.repaint()
 }
 
 object WizardPanel {
@@ -137,11 +140,13 @@ object WizardPanel {
 }
 
 trait WizardPanelEvent extends Event {
-  val wizardPanel:WizardPanel
+  val wizardPanel: WizardPanel
 }
 
-case class ExceptionThrown(wizardPanel:WizardPanel, throwable:Throwable) extends Event
+case class ExceptionThrown(wizardPanel: WizardPanel, throwable: Throwable) extends Event
 
-case class ComponentLoaded(component:Component) extends Event
-case class WizardCanceled(wizardPanel:WizardPanel) extends WizardPanelEvent
-case class WizardFinished(wizardPanel:WizardPanel) extends WizardPanelEvent
+case class ComponentLoaded(component: Component) extends Event
+
+case class WizardCanceled(wizardPanel: WizardPanel) extends WizardPanelEvent
+
+case class WizardFinished(wizardPanel: WizardPanel) extends WizardPanelEvent

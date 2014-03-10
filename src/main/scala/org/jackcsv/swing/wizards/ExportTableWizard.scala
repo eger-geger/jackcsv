@@ -3,8 +3,9 @@ package org.jackcsv.swing.wizards
 import org.jackcsv.swing.panels.{FileDialogMode, CSVChooserPanel, STableListPanel, WizardPanel}
 import org.jackcsv.table.STable
 import org.jackcsv.{Validation, TableController}
+import org.jackcsv.i10n.Localization
 
-class ExportTableWizard extends WizardPanel with Validation {
+class ExportTableWizard extends WizardPanel with Validation with Localization {
 
   private var table: STable = null
 
@@ -17,7 +18,7 @@ class ExportTableWizard extends WizardPanel with Validation {
 
   controllers += {
     case `tableListPanel` =>
-      require(tableListPanel.selectedTable.isDefined, "Table not selected")
+      require(tableListPanel.selectedTable.isDefined, Localization.localized("errors.table_not_selected"))
       table = tableListPanel.selectedTable.get
 
     case `fileChooserPanel` =>
