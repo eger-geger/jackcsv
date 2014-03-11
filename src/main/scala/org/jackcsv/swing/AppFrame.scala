@@ -59,15 +59,18 @@ class AppFrame extends MainFrame {
     _contents += new Menu(Localization.localized("menu.language")) with AbstractButtonLocalization {
       override def localizationPropertyKey: String = "menu.language"
 
-      _contents ++= new ButtonGroup(
-        SwingLocalization.createLocalizedRadioMenuItem("menu.language.en") {
-          Localization.currentLocale = Locale.ENGLISH
-        },
+      private val enRadioButton = SwingLocalization.createLocalizedRadioMenuItem("menu.language.en") {
+        Localization.currentLocale = Locale.ENGLISH
+      }
 
-        SwingLocalization.createLocalizedRadioMenuItem("menu.language.ru") {
-          Localization.currentLocale = Locale.forLanguageTag("ru-RU")
-        }
-      ).buttons
+      private val ruRadioButton = SwingLocalization.createLocalizedRadioMenuItem("menu.language.ru") {
+        Localization.currentLocale = Locale.forLanguageTag("ru-RU")
+      }
+
+      enRadioButton.selected = Localization.currentLocale.getLanguage == "en"
+      ruRadioButton.selected = Localization.currentLocale.getLanguage == "ru"
+
+      _contents ++= new ButtonGroup(enRadioButton, ruRadioButton).buttons
     }
   }
 

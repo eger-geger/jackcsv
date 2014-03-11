@@ -13,10 +13,10 @@ object SwingLocalization {
   }
 
   def createLocalizedRadioMenuItem(titlePropertyKey: String)(actionBody: => Unit) = {
-    new RadioMenuItem(titlePropertyKey) with AbstractButtonLocalization {
+    new RadioMenuItem(Localization.localized(titlePropertyKey)) with AbstractButtonLocalization {
       override def localizationPropertyKey: String = titlePropertyKey
 
-      this.action = Action(titlePropertyKey)(actionBody)
+      this.action = Action(Localization.localized(titlePropertyKey))(actionBody)
     }
   }
 
