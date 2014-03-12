@@ -3,13 +3,14 @@ package org.jackcsv.swing.panels
 import org.jackcsv.table.{NTable, STable}
 import scala.collection.mutable.ListBuffer
 import scala.swing._
+import org.jackcsv.i10n.SwingLocalization
 
 class NTableListPanel extends FlowPanel {
 
   private val tablePanels = new ListBuffer[NTablePanel]
 
   contents += new GridBagPanel {
-    private val addButton = Button("Add Panel") {
+    private val addButton = SwingLocalization.createLocalizedButton("ntable_list_panel.add_button") {
       addTablePanel(new NTablePanel(STable.tables.toSeq))
     }
 

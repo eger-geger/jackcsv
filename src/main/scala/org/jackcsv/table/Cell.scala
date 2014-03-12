@@ -37,7 +37,7 @@ object Cell {
   }
 }
 
-object EmptyCell extends Cell(null) {
+object EmptyCell extends Cell(new Object) {
 
   override def toString = "\u2205"
 

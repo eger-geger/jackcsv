@@ -36,7 +36,7 @@ object TableController extends Validation {
     require(preferences != null, Localization.localized("errors.csvpref_undefined"))
     require(table != null, Localization.localized("errors.table_not_selected"))
 
-    CsvWriter.write(file, preferences, table.rows.map(_.map(_.value.toString)))
+    CsvWriter.write(file, preferences, table.rows.map(_.map(_.toString)))
   }
 
   def renameTable(name: String, table: STable) {

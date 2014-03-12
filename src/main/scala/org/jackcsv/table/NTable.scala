@@ -41,7 +41,14 @@ object NTable {
     val buffer = new ListBuffer[CellSeq]
 
     for (r <- rows; row = r.toList ::: emptyCells(size - r.size)) {
-      val sameKeyRow = buffer.find(_(keyIndex) equals row(keyIndex))
+      val sameKeyRow = buffer.find(_(keyIndex) match {
+        case EmptyCell => false
+
+        case cell:Cell =>
+          cell equals row(keyIndex)
+
+        case _ => false
+      })
 
       if (sameKeyRow.isDefined) {
         sameKeyRow.get += row

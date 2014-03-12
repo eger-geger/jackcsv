@@ -1,13 +1,13 @@
 package org.jackcsv.swing.panels
 
 import java.util.ResourceBundle
-import org.jackcsv.NavigableBuffer
+import org.jackcsv.{Logger, NavigableBuffer}
 import org.jackcsv.i10n.{SwingLocalization, Localization}
 import scala.collection.mutable.ListBuffer
 import scala.swing._
 import scala.swing.event.Event
 
-class WizardPanel extends GridBagPanel with Localization {
+class WizardPanel extends GridBagPanel with Localization with Logger {
 
   private val _components = new NavigableBuffer[Component]
 
@@ -45,6 +45,7 @@ class WizardPanel extends GridBagPanel with Localization {
       WizardPanel.this.publish(WizardFinished(WizardPanel.this))
     } catch {
       case th: Throwable =>
+        th.getStackTrace.foreach(se => log(se.toString))
         WizardPanel.this.publish(ExceptionThrown(WizardPanel.this, th))
     }
   }
