@@ -9,8 +9,11 @@ import org.jackcsv.swing.wizards._
 import org.jackcsv.table.STable
 import scala.swing.TabbedPane.Page
 import scala.swing._
+import scala.collection.mutable.ListBuffer
 
 class AppFrame extends MainFrame {
+
+  private val tables = new ListBuffer[STable]
 
   private val tabbedPane = new XTabbedPane {
     reactions += {
@@ -32,27 +35,33 @@ class AppFrame extends MainFrame {
       override def localizationPropertyKey: String = "menu.tables"
 
       _contents += SwingLocalization.createLocalizedMenuItem("menu.tables.show") {
-        tabbedPane += SwingLocalization.createLocalizedPage("page.show_table", new ShowTableWizard(displayTable))
+        tabbedPane += SwingLocalization.createLocalizedPage("page.show_table", new ShowTableWizard(tables, displayTable))
       }
 
       _contents += SwingLocalization.createLocalizedMenuItem("menu.tables.join") {
-        tabbedPane += SwingLocalization.createLocalizedPage("page.join_tables", new JoinTablesWizard(displayTable))
+        tabbedPane += SwingLocalization.createLocalizedPage("page.join_tables", new JoinTablesWizard(tables, nTable =>{
+          tables += nTable; displayTable(nTable)
+        }))
       }
 
       _contents += new Menu(Localization.localized("menu.tables.import")) with AbstractButtonLocalization {
         override def localizationPropertyKey: String = "menu.tables.import"
 
         _contents += SwingLocalization.createLocalizedMenuItem("menu.tables.import.csv") {
-          tabbedPane += SwingLocalization.createLocalizedPage("page.import_table", new ImportTableWizard(displayTable))
+          tabbedPane += SwingLocalization.createLocalizedPage("page.import_table", new ImportTableWizard(sTable => {
+            tables += sTable; displayTable(sTable)
+          }))
         }
 
         _contents += SwingLocalization.createLocalizedMenuItem("menu.tables.import.text") {
-          tabbedPane += SwingLocalization.createLocalizedPage("page.import_table", new InputTableWizard(displayTable))
+          tabbedPane += SwingLocalization.createLocalizedPage("page.import_table", new InputTableWizard(sTable => {
+            tables += sTable; displayTable(sTable)
+          }))
         }
       }
 
       _contents += SwingLocalization.createLocalizedMenuItem("menu.tables.export") {
-        tabbedPane += SwingLocalization.createLocalizedPage("page.export_table", new ExportTableWizard)
+        tabbedPane += SwingLocalization.createLocalizedPage("page.export_table", new ExportTableWizard(tables))
       }
     }
 

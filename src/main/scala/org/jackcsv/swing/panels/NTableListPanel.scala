@@ -5,13 +5,13 @@ import scala.collection.mutable.ListBuffer
 import scala.swing._
 import org.jackcsv.i10n.SwingLocalization
 
-class NTableListPanel extends FlowPanel {
+class NTableListPanel(private val _tables:Seq[STable]) extends FlowPanel {
 
   private val tablePanels = new ListBuffer[NTablePanel]
 
   contents += new GridBagPanel {
     private val addButton = SwingLocalization.createLocalizedButton("ntable_list_panel.add_button") {
-      addTablePanel(new NTablePanel(STable.tables.toSeq))
+      addTablePanel(new NTablePanel(_tables))
     }
 
     add(addButton, new Constraints {
@@ -38,7 +38,7 @@ class NTableListPanel extends FlowPanel {
   def tables_=(value: Seq[NTable]) {
     tablePanels.foreach(p => contents -= p)
     tablePanels.clear()
-    tablePanels ++= value.map(t => new NTablePanel(STable.tables.toSeq) {table = t})
+    tablePanels ++= value.map(t => new NTablePanel(_tables) {table = t})
     tablePanels.foreach(addTablePanel)
   }
 

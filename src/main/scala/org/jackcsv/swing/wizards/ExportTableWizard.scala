@@ -5,11 +5,11 @@ import org.jackcsv.table.STable
 import org.jackcsv.{Validation, TableController}
 import org.jackcsv.i10n.Localization
 
-class ExportTableWizard extends WizardPanel with Validation with Localization {
+class ExportTableWizard(private val tables:Seq[STable]) extends WizardPanel with Validation with Localization {
 
   private var table: STable = null
 
-  private val tableListPanel = new STableListPanel
+  private val tableListPanel = new STableListPanel(tables)
 
   private val fileChooserPanel = new CSVChooserPanel(FileDialogMode.Save)
 

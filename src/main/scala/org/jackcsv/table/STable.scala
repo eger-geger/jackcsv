@@ -6,8 +6,6 @@ import org.jackcsv.NameGenerator
 
 class STable(var name: String, val rows: Seq[Seq[Cell]]) {
 
-  STable.managed += this
-
   def this(cells: Seq[Seq[Cell]]) = this(NameGenerator.generatedName[STable], cells)
 
   def apply(r: Int)(c: Int): Cell = rows(r)(c)
@@ -34,14 +32,10 @@ class STable(var name: String, val rows: Seq[Seq[Cell]]) {
 
 object STable {
 
-  private val managed = new mutable.HashSet[STable]
-
   implicit def apply(values: Traversable[Traversable[Any]]): STable =
     new STable(values.map(CellSeq.apply).toSeq)
 
   implicit def toCellArray[B >: Cell : ClassTag](table:STable) : Array[Array[B]] =
     table.rows.map(_.toArray[B]).toArray
-
-  def tables = managed.toSet
 
 }

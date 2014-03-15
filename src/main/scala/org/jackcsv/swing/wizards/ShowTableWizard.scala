@@ -5,9 +5,9 @@ import org.jackcsv.swing.panels.{STableListPanel, WizardPanel}
 import org.jackcsv.table.STable
 import org.jackcsv.i10n.Localization
 
-class ShowTableWizard(onFinish: STable => Unit) extends WizardPanel with Validation with Localization {
+class ShowTableWizard(private val tables:Seq[STable], private val onFinish: STable => Unit) extends WizardPanel with Validation with Localization {
 
-  private val tableListPanel = new STableListPanel
+  private val tableListPanel = new STableListPanel(tables)
 
   this += tableListPanel
 

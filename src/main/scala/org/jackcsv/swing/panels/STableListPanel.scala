@@ -7,7 +7,7 @@ import org.jackcsv.i10n.Localization
 import java.util.ResourceBundle
 import org.jackcsv.ViewModel
 
-class STableListPanel extends GridBagPanel {
+class STableListPanel(private val tables:Seq[STable]) extends GridBagPanel {
 
   private val selectedTableLabel = new Label with Localization {
     override def updateLocalizedStrings(bundle: ResourceBundle): Unit = {
@@ -17,7 +17,7 @@ class STableListPanel extends GridBagPanel {
   
   private val selectedTableNameLabel = new Label
 
-  private val tableListView = new ListView(ViewModel.fromSeq[STable](STable.tables.toSeq, _.name)){
+  private val tableListView = new ListView(ViewModel.fromSeq[STable](tables, _.name)){
     selection.intervalMode = ListView.IntervalMode.Single
   }
 

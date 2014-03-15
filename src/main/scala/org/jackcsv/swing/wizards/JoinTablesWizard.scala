@@ -2,15 +2,13 @@ package org.jackcsv.swing.wizards
 
 import org.jackcsv.TableController
 import org.jackcsv.swing.panels.{ComponentLoaded, TableNamePanel, NTableListPanel, WizardPanel}
-import org.jackcsv.table.NTable
-import org.jackcsv.i10n.Localization
-import java.util.ResourceBundle
+import org.jackcsv.table.{STable, NTable}
 
-class JoinTablesWizard(onFinish: NTable => Unit) extends WizardPanel {
+class JoinTablesWizard(private val tables: Seq[STable], private val onFinish: NTable => Unit) extends WizardPanel {
 
   private var table: NTable = null
 
-  private val tableListPanel = new NTableListPanel
+  private val tableListPanel = new NTableListPanel(tables)
 
   private val tableNamePanel = new TableNamePanel
 

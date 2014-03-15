@@ -8,9 +8,8 @@ class Cell protected (private var _value: Any) {
     _value = (value, other.value) match {
       case (v, null) => v
       case (null, v) => v
-      case (v1, v2) if v1.equals(v2) => v1
       case (v1: Number, v2: Number) => v1.floatValue() + v2.floatValue()
-      case (v1, v2) => s"$v1, $v2"
+      case (v1, v2) => s"$v1 | $v2"
     }
   }
 
@@ -37,9 +36,7 @@ object Cell {
   }
 }
 
-object EmptyCell extends Cell(new Object) {
-
-  override def toString = "\u2205"
+object EmptyCell extends Cell("") {
 
   override def +=(other: Cell) {}
 
